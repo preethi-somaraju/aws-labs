@@ -1,0 +1,17 @@
+{
+  "title": "Lab 01 architecture: budget alarm, Terraform remote state and locking",
+  "width": 780, "height": 380,
+  "groups": [{"x": 235, "y": 20, "w": 510, "h": 335, "label": "AWS account"}],
+  "nodes": [
+    {"id": "tf",  "x": 45,  "y": 120, "label": "Terraform CLI", "sub": "local state\nfor this lab only"},
+    {"id": "s3",  "icon": "s3",       "x": 590, "y": 50,  "label": "Amazon S3", "sub": "versioned, SSE-S3\npublic access blocked"},
+    {"id": "ddb", "icon": "dynamodb", "x": 590, "y": 175, "label": "DynamoDB", "sub": "state lock, on-demand"},
+    {"id": "bud", "icon": "budgets",  "x": 300, "y": 275, "label": "AWS Budgets", "sub": "$5 / month"},
+    {"id": "mail","x": 590, "y": 275, "label": "Email alert", "sub": "50% actual, 100% forecast"}
+  ],
+  "edges": [
+    {"from": "tf",  "to": "s3",   "label": "state object"},
+    {"from": "tf",  "to": "ddb",  "label": "LockID"},
+    {"from": "bud", "to": "mail", "label": "threshold breach"}
+  ]
+}
