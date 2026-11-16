@@ -119,8 +119,22 @@ NN-lab-name/
   docs/blog/screenshots/
 ```
 
-## Cost
+## Cost and teardown
 
 Every lab states its cost before the first command and ends with
 `terraform destroy`. Redshift, MSK, MWAA and OpenSearch are the expensive
 ones; those labs state the hourly rate up front and run briefly.
+
+Destroy is verified, not assumed:
+
+```bash
+terraform destroy
+python scripts/verify_torn_down.py    # non-zero if anything survived
+```
+
+It checks resources tagged `Project=aws-labs` and, separately, the services
+that bill whether tagged or not — EC2, NAT gateways, Elastic IPs, RDS, load
+balancers, Redshift, MSK, MWAA, OpenSearch. Lab 01's budget, state bucket and
+lock table are permanent and allowed; anything else is a finding.
+
+No lab is published until this returns clean.
