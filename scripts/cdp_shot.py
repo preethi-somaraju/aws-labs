@@ -102,6 +102,17 @@ def main() -> int:
         '[role="tooltip"],[class*="tutorial"],[class*="walkthrough"],[class*="hotspot"],'
         + '[data-testid*="tutorial"],[id*="tutorial"]'
       ).forEach(e => { try { e.remove(); n++; } catch (err) {} });
+      // Modal dialogs sit above everything; close them before anything else.
+      document.querySelectorAll('[role="dialog"] button, [class*="modal"] button')
+        .forEach(b => {
+          const t = (b.textContent || "").trim().toLowerCase();
+          if (t === "cancel" || t === "close" || t === "ok" || t === "dismiss") {
+            try { b.click(); n++; } catch (e) {}
+          }
+        });
+      document.querySelectorAll('[role="dialog"],[class*="awsui_dialog"]')
+        .forEach(e => { try { e.remove(); n++; } catch (e2) {} });
+
       // Last resort: find the tour popover by its copy and drop its container.
       const marker = "You can access all AWS services here";
       document.querySelectorAll("div,section").forEach(e => {
