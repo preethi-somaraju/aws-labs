@@ -73,6 +73,8 @@ def main() -> int:
     ap.add_argument("--width", type=int, default=1600)
     ap.add_argument("--height", type=int, default=1100)
     ap.add_argument("--profile", default="preethi-portfolio")
+    ap.add_argument("--expect", action="append", default=[],
+                    help="text that must be visible, or the capture is refused")
     args = ap.parse_args()
 
     acct = account_id(args.profile)
@@ -145,6 +147,16 @@ def main() -> int:
         if acct in (c.js("document.body.innerText") or ""):
             print("FAIL: account ID still visible after redaction; refusing to write")
             return 3
+
+    # Assert the page actually shows what the lab claims it shows. A tour
+    # popover, a modal or a half-loaded table all produce a plausible-looking
+    # image of the wrong thing; three shipped that way before this existed.
+    if args.expect:
+        text = c.js("document.body.innerText") or ""
+        missing = [e for e in args.expect if e.lower() not in text.lower()]
+        if missing:
+            print(f"FAIL: expected text not visible: {missing}")
+            return 4
 
     data = c.call("Page.captureScreenshot", format="png")["data"]
     with open(args.out, "wb") as fh:
