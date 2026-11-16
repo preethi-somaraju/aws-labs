@@ -80,6 +80,13 @@ def main() -> int:
     c.call("Page.enable")
     c.call("Emulation.setDeviceMetricsOverride", width=args.width,
            height=args.height, deviceScaleFactor=1, mobile=False)
+    # AWS console follows prefers-color-scheme. Force light so captures sit
+    # on a light page without a black rectangle in the middle of it.
+    try:
+        c.call("Emulation.setEmulatedMedia",
+               features=[{"name": "prefers-color-scheme", "value": "light"}])
+    except Exception:
+        pass
     c.call("Page.navigate", url=args.url)
     time.sleep(args.wait)
 
