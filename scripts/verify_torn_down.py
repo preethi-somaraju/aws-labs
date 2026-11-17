@@ -114,6 +114,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--profile", default="preethi-portfolio")
     ap.add_argument("--json", action="store_true")
+    ap.add_argument("--mask", action="store_true",
+                    help="replace the account number with <account-id> so the "
+                         "output can be published or screenshotted")
     args = ap.parse_args()
 
     findings, kept = [], []
@@ -121,6 +124,12 @@ def main() -> int:
         for arn in tagged_resources(args.profile, region):
             (kept if permanent(arn) else findings).append(f"tagged: {arn}")
         findings += [f"{region} {f}" for f in billable(args.profile, region)]
+
+    if args.mask:
+        import re as _re
+        sub = lambda v: _re.sub(r"\d{12}", "<account-id>", v)
+        findings = [sub(f) for f in findings]
+        kept = [sub(k) for k in kept]
 
     if args.json:
         print(json.dumps({"findings": findings, "permanent": kept}, indent=2))

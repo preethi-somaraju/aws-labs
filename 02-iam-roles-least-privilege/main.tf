@@ -1,7 +1,8 @@
 terraform {
   required_version = ">= 1.6.0"
   required_providers {
-    aws = { source = "hashicorp/aws", version = "~> 5.0" }
+    aws    = { source = "hashicorp/aws", version = "~> 5.0" }
+    random = { source = "hashicorp/random", version = "~> 3.6" }
   }
 }
 
@@ -20,10 +21,17 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 
+# A random suffix, not the account ID. Bucket names end up in plan output,
+# CLI logs and screenshots; embedding the account ID there leaks it everywhere
+# and makes any terminal capture unpublishable.
+resource "random_id" "suffix" {
+  byte_length = 4
+}
+
 locals {
   account = data.aws_caller_identity.current.account_id
-  lake    = "lab-data-lake-${local.account}"
-  logs    = "lab-cloudtrail-${local.account}"
+  lake    = "lab-data-lake-${random_id.suffix.hex}"
+  logs    = "lab-cloudtrail-${random_id.suffix.hex}"
 }
 
 # ---------------------------------------------------------------------------

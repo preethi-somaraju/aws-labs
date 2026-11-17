@@ -138,3 +138,15 @@ balancers, Redshift, MSK, MWAA, OpenSearch. Lab 01's budget, state bucket and
 lock table are permanent and allowed; anything else is a finding.
 
 No lab is published until this returns clean.
+
+## Figures
+
+Terminal figures are photographs of a real terminal, not typeset cards. The
+commands are echoed by bash under `set -x`, so a figure cannot show one command
+and run another, and the `.sh` that produced each one is committed beside it in
+`docs/blog/commands/`. Before any window opens the output is scanned for
+account IDs, access keys and personal paths; if anything matches, nothing is
+captured — changing the command is the fix, not redacting the picture.
+
+Bucket names use a random suffix rather than the account ID, so nothing has to
+be redacted out of plan and apply output in the first place.

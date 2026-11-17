@@ -127,9 +127,20 @@ data-plane compromise erase its own evidence. Management events only — data
 events bill per event and are the realistic way to turn a free lab into a
 charge.
 
+![A real terminal running terraform plan, showing Plan: 17 to add](docs/blog/screenshots/03-terraform-plan.png)
+
+*Figure 2. `terraform plan` — 17 resources. Every command line in these
+terminal figures was printed by bash under `set -x` from the command it was
+about to run, so the figure cannot show one command and execute another. The
+`.sh` files are committed beside the images in `docs/blog/commands/`.*
+
+![A real terminal running terraform apply, ending with Apply complete! Resources: 17 added](docs/blog/screenshots/04-terraform-apply.png)
+
+*Figure 3. The apply. The three lake zones are visible being created.*
+
 ![The analyst role in the IAM console, showing Permissions boundary set](docs/blog/screenshots/01-analyst-role-boundary.png)
 
-*Figure 2. `Permissions boundary (set)` on the analyst role.*
+*Figure 4. `Permissions boundary (set)` on the analyst role.*
 
 ## 7. Validation and testing
 
@@ -156,18 +167,18 @@ simulator and reality agree.
 
 ![The lake bucket showing raw, curated and analytics prefixes](docs/blog/screenshots/02-lake-zones.png)
 
-*Figure 3. The three zones.*
+*Figure 5. The three zones.*
 
 The evidence that matters, as the analyst:
 
 ```
-$ aws s3api get-object --bucket lab-data-lake-<account-id> \
+$ aws s3api get-object --bucket lab-data-lake-a1b2c3d4 \
     --key raw/sample.txt /tmp/leak.txt
 
 An error occurred (AccessDenied) when calling the GetObject operation:
 User: arn:aws:sts::<account-id>:assumed-role/lab-data-analyst/ana-raw is not
 authorized to perform: s3:GetObject on resource:
-"arn:aws:s3:::lab-data-lake-<account-id>/raw/sample.txt"
+"arn:aws:s3:::lab-data-lake-a1b2c3d4/raw/sample.txt"
 with an explicit deny in an identity-based policy
 ```
 
@@ -175,7 +186,7 @@ AWS names the mechanism itself: *with an explicit deny in an identity-based
 policy*. And listing is refused before any object is touched:
 
 ```
-$ aws s3 ls s3://lab-data-lake-<account-id>/raw/
+$ aws s3 ls s3://lab-data-lake-a1b2c3d4/raw/
 An error occurred (AccessDenied) when calling the ListObjectsV2 operation: Access Denied
 ```
 
@@ -251,16 +262,11 @@ terraform destroy
 python scripts/verify_torn_down.py
 ```
 
-```
-Destroy complete! Resources: 16 destroyed.
+![A real terminal showing Destroy complete! Resources: 17 destroyed, then Clean: nothing left behind](docs/blog/screenshots/05-teardown-verified.png)
 
-Permanent (expected, 3):
-   arn:aws:dynamodb:us-east-1:<account-id>:table/aws-labs-tflock
-   arn:aws:s3:::aws-labs-tfstate-<account-id>
-   arn:aws:budgets::<account-id>:budget/aws-labs-monthly
-
-Clean: nothing left behind.
-```
+*Figure 6. Teardown and its verification in one frame. "I ran destroy" and
+"nothing is left" are different claims; the second one is what keeps the bill
+at zero, so it is checked rather than assumed.*
 
 Both buckets use `force_destroy`, because CloudTrail keeps writing for a few
 minutes after a trail is deleted and that is the usual reason this kind of
