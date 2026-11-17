@@ -262,11 +262,16 @@ terraform destroy
 python scripts/verify_torn_down.py
 ```
 
-![A real terminal showing Destroy complete! Resources: 17 destroyed, then Clean: nothing left behind](docs/blog/screenshots/05-teardown-verified.png)
+![A real terminal running terraform destroy, ending with Destroy complete! Resources: 17 destroyed](docs/blog/screenshots/05-terraform-destroy.png)
 
-*Figure 6. Teardown and its verification in one frame. "I ran destroy" and
-"nothing is left" are different claims; the second one is what keeps the bill
-at zero, so it is checked rather than assumed.*
+*Figure 6. The teardown. Both roles, the permissions boundary and both buckets
+come down.*
+
+![A real terminal running the teardown verifier, showing Clean: nothing left behind](docs/blog/screenshots/06-verify-clean.png)
+
+*Figure 7. "I ran destroy" and "nothing is left" are different claims. The
+verifier checks resources tagged for the series and, separately, the services
+that bill whether tagged or not. Only Lab 01's permanent three remain.*
 
 Both buckets use `force_destroy`, because CloudTrail keeps writing for a few
 minutes after a trail is deleted and that is the usual reason this kind of
