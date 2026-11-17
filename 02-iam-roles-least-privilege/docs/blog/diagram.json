@@ -1,0 +1,28 @@
+{
+  "title": "Lab 02: two roles, three lake zones, a permissions boundary",
+  "width": 820, "height": 430,
+  "groups": [
+    {"x": 238, "y": 18, "w": 226, "h": 250, "label": "Permissions boundary"},
+    {"x": 540, "y": 18, "w": 258, "h": 390, "label": "S3 lake"}
+  ],
+  "nodes": [
+    {"id": "admin", "icon": "iam", "x": 50,  "y": 120, "label": "Admin identity", "sub": "sts:AssumeRole"},
+    {"id": "eng",   "icon": "iam", "x": 300, "y": 58,  "label": "data-engineer", "sub": "owns raw + curated"},
+    {"id": "ana",   "icon": "iam", "x": 300, "y": 185, "label": "data-analyst", "sub": "reads curated"},
+    {"id": "raw",   "icon": "s3",  "x": 620, "y": 58,  "label": "raw/", "sub": "landing"},
+    {"id": "cur",   "icon": "s3",  "x": 620, "y": 185, "label": "curated/", "sub": "business-readable"},
+    {"id": "ana2",  "icon": "s3",  "x": 620, "y": 310, "label": "analytics/", "sub": "query results"},
+    {"id": "trail", "icon": "cloudtrail", "x": 300, "y": 330, "label": "CloudTrail", "sub": "separate bucket"}
+  ],
+  "edges": [
+    {"from": "admin", "to": "eng"},
+    {"from": "admin", "to": "ana"},
+    {"from": "eng", "to": "raw", "label": "read + write"},
+    {"from": "eng", "to": "cur", "label": "read + write"},
+    {"from": "ana", "to": "cur", "label": "read"},
+    {"from": "ana", "to": "ana2", "label": "read + write"},
+    {"from": "ana", "to": "raw", "label": "explicit DENY", "dashed": true},
+    {"from": "eng", "to": "trail", "dashed": true},
+    {"from": "ana", "to": "trail", "dashed": true}
+  ]
+}
