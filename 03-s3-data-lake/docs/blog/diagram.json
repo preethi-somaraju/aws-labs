@@ -1,0 +1,109 @@
+{
+  "title": "Lab 03: one bucket, three zones, a policy gate and four lifecycle rules",
+  "width": 860,
+  "height": 440,
+  "groups": [
+    {
+      "x": 236,
+      "y": 20,
+      "w": 190,
+      "h": 300,
+      "label": "Bucket policy"
+    },
+    {
+      "x": 470,
+      "y": 20,
+      "w": 370,
+      "h": 400,
+      "label": "Lake bucket (versioned, AES256)"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "writer",
+      "icon": "iam",
+      "x": 48,
+      "y": 150,
+      "label": "Writer",
+      "sub": "pipeline or analyst"
+    },
+    {
+      "id": "gate",
+      "icon": "iam",
+      "x": 305,
+      "y": 70,
+      "label": "Deny outside zones",
+      "sub": "s3:PutObject"
+    },
+    {
+      "id": "tls",
+      "icon": "iam",
+      "x": 305,
+      "y": 210,
+      "label": "Deny non-TLS",
+      "sub": "and wrong algorithm"
+    },
+    {
+      "id": "raw",
+      "icon": "s3",
+      "x": 540,
+      "y": 62,
+      "label": "raw/",
+      "sub": "IA 30d, GLACIER_IR 90d"
+    },
+    {
+      "id": "cur",
+      "icon": "s3",
+      "x": 540,
+      "y": 190,
+      "label": "curated/",
+      "sub": "versions expire 90d"
+    },
+    {
+      "id": "ana",
+      "icon": "s3",
+      "x": 540,
+      "y": 318,
+      "label": "analytics/",
+      "sub": "objects expire 30d"
+    },
+    {
+      "id": "parts",
+      "icon": "s3",
+      "x": 740,
+      "y": 250,
+      "label": "Incomplete upload",
+      "sub": "never completed, still billed"
+    }
+  ],
+  "edges": [
+    {
+      "from": "writer",
+      "to": "gate"
+    },
+    {
+      "from": "writer",
+      "to": "tls"
+    },
+    {
+      "from": "gate",
+      "to": "raw",
+      "label": "allowed"
+    },
+    {
+      "from": "gate",
+      "to": "cur",
+      "label": "allowed"
+    },
+    {
+      "from": "gate",
+      "to": "ana",
+      "label": "allowed"
+    },
+    {
+      "from": "gate",
+      "to": "parts",
+      "dashed": true
+    }
+  ]
+}
