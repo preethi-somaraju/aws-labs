@@ -16,6 +16,11 @@ output. Problems hit along the way are written up as they happened.
 **No NAT Gateway** unless a lab is about it — private subnets reach AWS
 services through VPC endpoints. A budget alarm exists from week 1.
 
+Labs run in a dedicated `aws-labs` member account, not the organization's
+management account: Service Control Policies do not apply to the management
+account, so nothing running there can be contained by the organization's own
+guardrails. Labs 01 and 02 predate that move.
+
 ## Phase 1 — Foundations for data work (weeks 1–6)
 
 | Wk | Lab | Proves |

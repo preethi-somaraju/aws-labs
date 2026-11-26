@@ -157,6 +157,14 @@ The lifecycle configuration took 56 seconds to create while every other
 resource took under three. Nothing is wrong; S3 accepts the configuration and
 the provider waits for it to become readable.
 
+![The S3 console showing four enabled lifecycle rules: raw-cooling, curated-history, analytics-disposable and abort-orphaned-parts](docs/blog/screenshots/03-lifecycle-rules.png)
+
+*Figure 4. The four rules as S3 stored them. Note what the console says above
+them: `Default minimum object size for transitions — All storage classes
+128K`. AWS applies that floor itself, because transitioning objects smaller
+than 128 KB generally costs more than it saves. The design note about small
+files is not a matter of opinion; it is built into the service.*
+
 ## 7. Validation and testing
 
 Thirteen checks, all passing. Full output in [TESTS.md](TESTS.md).
@@ -203,6 +211,12 @@ An error occurred (NoSuchKey) ... The specified key does not exist.
 The object is not gone. A delete marker is the current version and the data
 sits behind it. `NoSuchKey` means "no current version", which is a different
 claim from "no object" — and the difference is a recovery procedure.
+
+![The S3 console with Show versions on, listing a delete marker above two versions of report.txt](docs/blog/screenshots/04-object-versions.png)
+
+*Figure 5. The same object with `Show versions` turned on: a 0-byte delete
+marker on top, and underneath it both versions — 15 bytes written second, 14
+bytes written first. Nothing was lost by either the overwrite or the delete.*
 
 **The finding worth the lab.** A multipart upload was started, one 5 MiB part
 sent, and the upload abandoned:
@@ -321,6 +335,17 @@ Permanent (expected, 3):
 
 Clean: nothing left behind.
 ```
+
+![A real terminal running terraform destroy, ending with Destroy complete! Resources: 10 destroyed](docs/blog/screenshots/05-terraform-destroy.png)
+
+*Figure 6. The teardown. It re-applies first, for the same reason figure 3
+destroys first — the capture runs its script twice, and the count has to be
+real.*
+
+![A real terminal running the teardown verifier, showing three permanent resources and Clean: nothing left behind](docs/blog/screenshots/06-verify-clean.png)
+
+*Figure 7. The check that has to be believed. Three permanent resources named,
+nothing else found.*
 
 The verifier makes two passes: everything tagged `Project=aws-labs`, and the
 services that bill whether tagged or not. Lab 01's three resources are
