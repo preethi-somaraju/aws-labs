@@ -141,21 +141,20 @@ write a policy that does the opposite of what it reads like.
 
 ![A real terminal running terraform plan, showing Plan: 10 to add](docs/blog/screenshots/01-terraform-plan.png)
 
-*Figure 2. `terraform plan` — 10 resources. Every command line in these
-terminal figures was printed by bash under `set -x` from the command it was
-about to run, so a figure cannot show one command and execute another. The
-`.sh` files are committed beside the images in `docs/blog/commands/`.*
+*Figure 2. Ten resources: the bucket, its four settings, three zone markers,
+the policy and the lifecycle configuration.*
 
 ![A real terminal running terraform apply, ending with Apply complete! Resources: 10 added](docs/blog/screenshots/02-terraform-apply.png)
 
-*Figure 3. The apply. It opens with a `destroy` because the capture tool runs
-its script twice — once headless, so the output can be scanned for account IDs
-and credentials before any image exists, and once in the window. Starting from
-nothing is what makes the visible run a real create rather than a no-op.*
+*Figure 3. The apply. The lifecycle configuration takes 56 seconds while
+everything else takes under three — S3 accepts it immediately and the provider
+waits for it to become readable.*
 
-The lifecycle configuration took 56 seconds to create while every other
-resource took under three. Nothing is wrong; S3 accepts the configuration and
-the provider waits for it to become readable.
+The terminal figures are photographs of a real terminal: bash printed each
+command line under `set -x` from the command it was about to run, and the
+`.sh` files behind them are committed in `docs/blog/commands/`. Mutating
+commands are reset between the scan run and the captured run, so a figure
+shows the real thing happening rather than a second, empty re-run.
 
 ![The S3 console showing four enabled lifecycle rules: raw-cooling, curated-history, analytics-disposable and abort-orphaned-parts](docs/blog/screenshots/03-lifecycle-rules.png)
 
@@ -274,9 +273,11 @@ the things it is sure about is not reporting on the things it is unsure about
 either.
 
 **A figure that showed a no-op.** The first apply capture ended in
-`Resources: 0 added`. The capture tool runs its commands twice and the first,
-headless run had already created everything. Fixed by destroying at the top of
-the captured script, which is why figure 3 opens on a `destroy`.
+`Resources: 0 added`. The capture tool runs its commands twice — once headless
+so the output can be scanned for credentials before any image exists — and
+that first run had already created everything. The tool now takes a `--reset`
+command that runs between the two, outside the captured script, so the
+photographed run is a real create and the figure shows only the apply.
 
 **The same escaping bug as last time.** One test was written through a quoted
 heredoc with a nested `bash -c`, and the backslashes survived into the file
@@ -338,14 +339,11 @@ Clean: nothing left behind.
 
 ![A real terminal running terraform destroy, ending with Destroy complete! Resources: 10 destroyed](docs/blog/screenshots/05-terraform-destroy.png)
 
-*Figure 6. The teardown. It re-applies first, for the same reason figure 3
-destroys first — the capture runs its script twice, and the count has to be
-real.*
+*Figure 6. The teardown.*
 
 ![A real terminal running the teardown verifier, showing three permanent resources and Clean: nothing left behind](docs/blog/screenshots/06-verify-clean.png)
 
-*Figure 7. The check that has to be believed. Three permanent resources named,
-nothing else found.*
+*Figure 7. Three permanent resources named, nothing else found.*
 
 The verifier makes two passes: everything tagged `Project=aws-labs`, and the
 services that bill whether tagged or not. Lab 01's three resources are

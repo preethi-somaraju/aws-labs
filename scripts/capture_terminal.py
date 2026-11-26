@@ -197,6 +197,12 @@ def main() -> int:
                     help="window title shown in the title bar of the figure")
     ap.add_argument("--redact", action="append", default=[],
                     help="extra literal that must not appear; repeatable")
+    ap.add_argument("--reset", default=None, metavar="CMD",
+                    help="shell command run between the two runs, to put the "
+                         "world back as it was. A mutating script otherwise "
+                         "photographs its own no-op second run. Not part of "
+                         "the captured commands, so it never appears in the "
+                         "figure.")
     ap.add_argument("--allow-nonzero", action="store_true",
                     help="permit a non-zero exit from the commands")
     args = ap.parse_args()
@@ -226,6 +232,16 @@ def main() -> int:
               "only removes what I thought to look for.")
         return 1
     print("  output is clean of account IDs, keys and personal paths")
+
+    # ---- 1a. undo the dry run, so the captured run is the real one ----
+    if args.reset:
+        print(f"  resetting: {args.reset}")
+        r = subprocess.run(args.reset, shell=True, cwd=script.parent,
+                           capture_output=True, text=True, timeout=1800)
+        if r.returncode != 0:
+            print(r.stderr[-1500:])
+            raise SystemExit(f"REFUSING TO CAPTURE: reset exited {r.returncode}. "
+                             "The window run would photograph a no-op.")
 
     # ---- 2. run it again in a real terminal, and photograph that ----
     # Size the window to the output. A fixed 30 rows left half the figure as
