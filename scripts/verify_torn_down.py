@@ -32,12 +32,36 @@ PERMANENT = (
 )
 
 
+class AuthError(RuntimeError):
+    """Credentials are missing or expired, so nothing below can be trusted."""
+
+
+# Expired credentials once looked exactly like an empty account: every call
+# failed, every failure returned None, and the verifier reported "clean".
+AUTH_ERRORS = (
+    "ExpiredToken",
+    "Token has expired",
+    "InvalidClientTokenId",
+    "InvalidGrantException",
+    "Unable to locate credentials",
+    "The SSO session associated with this profile has expired",
+    "Error when retrieving token from sso",
+)
+
+# Calls that failed for some other reason. Not findings, but not clean either.
+UNCHECKED = []
+
+
 def aws(args, profile, region=None):
     cmd = ["aws", *args, "--profile", profile, "--output", "json"]
     if region:
         cmd += ["--region", region]
     r = subprocess.run(cmd, capture_output=True, text=True, timeout=120)
     if r.returncode != 0:
+        err = (r.stderr or "").strip()
+        if any(p in err for p in AUTH_ERRORS):
+            raise AuthError(err.splitlines()[-1] if err else "credentials rejected")
+        UNCHECKED.append(" ".join(args[:2]) + ": " + (err.splitlines()[-1] if err else "failed"))
         return None
     try:
         return json.loads(r.stdout or "null")
@@ -112,7 +136,7 @@ def billable(profile, region):
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--profile", default="preethi-portfolio")
+    ap.add_argument("--profile", default="preethi-labs")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--mask", action="store_true",
                     help="replace the account number with <account-id> so the "
@@ -120,10 +144,22 @@ def main() -> int:
     args = ap.parse_args()
 
     findings, kept = [], []
-    for region in REGIONS:
-        for arn in tagged_resources(args.profile, region):
-            (kept if permanent(arn) else findings).append(f"tagged: {arn}")
-        findings += [f"{region} {f}" for f in billable(args.profile, region)]
+    try:
+        aws(["sts", "get-caller-identity"], args.profile)
+    except AuthError as e:
+        print(f"Cannot verify: {e}", file=sys.stderr)
+        print("Re-authenticate, then run this again. An unverified teardown "
+              "is not a clean one.", file=sys.stderr)
+        return 2
+
+    try:
+        for region in REGIONS:
+            for arn in tagged_resources(args.profile, region):
+                (kept if permanent(arn) else findings).append(f"tagged: {arn}")
+            findings += [f"{region} {f}" for f in billable(args.profile, region)]
+    except AuthError as e:
+        print(f"Credentials stopped working mid-run: {e}", file=sys.stderr)
+        return 2
 
     if args.mask:
         import re as _re
@@ -132,7 +168,8 @@ def main() -> int:
         kept = [sub(k) for k in kept]
 
     if args.json:
-        print(json.dumps({"findings": findings, "permanent": kept}, indent=2))
+        print(json.dumps({"findings": findings, "permanent": kept,
+                          "unchecked": UNCHECKED}, indent=2))
     else:
         print(f"Permanent (expected, {len(kept)}):")
         for k in kept:
@@ -143,10 +180,14 @@ def main() -> int:
             for f in findings:
                 print("   " + f)
             print("\nDestroy did not finish. Resolve before publishing the lab.")
+        elif UNCHECKED:
+            print(f"INCONCLUSIVE ({len(UNCHECKED)} checks could not run):")
+            for u in UNCHECKED:
+                print("   " + u)
         else:
             print("Clean: nothing left behind.")
 
-    return 1 if findings else 0
+    return 1 if findings else (3 if UNCHECKED else 0)
 
 
 if __name__ == "__main__":
