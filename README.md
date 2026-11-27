@@ -27,6 +27,16 @@ management account: Service Control Policies do not apply to the management
 account, so nothing running there can be contained by the organization's own
 guardrails. Labs 01 and 02 predate that move.
 
+## Publishing a lab
+
+Three repos change, every time:
+
+| Repo | What |
+|------|------|
+| `aws-labs` | the lab directory and its write-up |
+| `preethi-somaraju.github.io` | the post, the writing index, the home page |
+| `preethi-somaraju` | the profile README's latest-lab line |
+
 ## Phase 1 — Foundations for data work (weeks 1–6)
 
 | Wk | Lab | Proves |
