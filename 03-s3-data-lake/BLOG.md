@@ -146,23 +146,12 @@ the policy and the lifecycle configuration.*
 
 ![A real terminal running terraform apply, ending with Apply complete! Resources: 10 added](docs/blog/screenshots/02-terraform-apply.png)
 
-*Figure 3. The apply. The lifecycle configuration takes 56 seconds while
-everything else takes under three — S3 accepts it immediately and the provider
-waits for it to become readable.*
-
-The terminal figures are photographs of a real terminal: bash printed each
-command line under `set -x` from the command it was about to run, and the
-`.sh` files behind them are committed in `docs/blog/commands/`. Mutating
-commands are reset between the scan run and the captured run, so a figure
-shows the real thing happening rather than a second, empty re-run.
+*Figure 3. The apply.*
 
 ![The S3 console showing four enabled lifecycle rules: raw-cooling, curated-history, analytics-disposable and abort-orphaned-parts](docs/blog/screenshots/03-lifecycle-rules.png)
 
-*Figure 4. The four rules as S3 stored them. Note what the console says above
-them: `Default minimum object size for transitions — All storage classes
-128K`. AWS applies that floor itself, because transitioning objects smaller
-than 128 KB generally costs more than it saves. The design note about small
-files is not a matter of opinion; it is built into the service.*
+*Figure 4. The four rules as S3 stored them. AWS will not transition objects
+under 128 KB at all — moving them costs more than it saves.*
 
 ## 7. Validation and testing
 
@@ -213,9 +202,7 @@ claim from "no object" — and the difference is a recovery procedure.
 
 ![The S3 console with Show versions on, listing a delete marker above two versions of report.txt](docs/blog/screenshots/04-object-versions.png)
 
-*Figure 5. The same object with `Show versions` turned on: a 0-byte delete
-marker on top, and underneath it both versions — 15 bytes written second, 14
-bytes written first. Nothing was lost by either the overwrite or the delete.*
+*Figure 5. A delete marker on top of both versions.*
 
 **The finding worth the lab.** A multipart upload was started, one 5 MiB part
 sent, and the upload abandoned:
