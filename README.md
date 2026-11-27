@@ -37,6 +37,12 @@ Three repos change, every time:
 | `preethi-somaraju.github.io` | the post, the writing index, the home page |
 | `preethi-somaraju` | the profile README's latest-lab line |
 
+The profile is a separate repo and kept going stale, so it is scripted:
+
+```
+python scripts/update_profile.py 03 "S3 as a data lake"     aws-lab-03-s3-data-lake "one sentence on what the lab found."
+```
+
 ## Phase 1 — Foundations for data work (weeks 1–6)
 
 | Wk | Lab | Proves |
