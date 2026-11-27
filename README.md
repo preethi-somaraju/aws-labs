@@ -13,6 +13,12 @@ Design → implement → test → document → clean up. A successful `terraform
 proves nothing; every lab records positive and negative tests with actual
 output. Problems hit along the way are written up as they happened.
 
+Figures are planned in `DESIGN.md` before the lab runs and follow the order the
+work happens in — design, build, evidence, teardown — numbered down the page,
+with captions that describe what is in the frame. A figure that needs a
+paragraph of explanation is a figure to fix. `scripts/figure_order.py` checks
+the sequence before publishing.
+
 **No NAT Gateway** unless a lab is about it — private subnets reach AWS
 services through VPC endpoints. A budget alarm exists from week 1.
 
